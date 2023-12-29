@@ -1,7 +1,7 @@
 {
     "name": "react-soda",
     "version": "0.0.1",
-    "description": "😉 A simpler and more effective state management for react.",
+    "description": "😉 Simpler and more effective state management for react.",
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
     "scripts": {
@@ -19,6 +19,10 @@
         "soda"
     ],
     "authors": [],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/1adybug/react-soda"
+    },
     "license": "MIT",
     "files": [
         "dist",
