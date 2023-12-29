@@ -1,0 +1,39 @@
+{
+    "name": "react-soda",
+    "version": "0.0.1",
+    "description": "😉 A simpler and more effective state management for react.",
+    "main": "dist/cjs/index.js",
+    "module": "dist/esm/index.js",
+    "scripts": {
+        "dev": "father dev",
+        "build": "father build",
+        "build:deps": "father prebundle",
+        "prepublishOnly": "father doctor && npm run build"
+    },
+    "keywords": [
+        "react",
+        "state",
+        "state management",
+        "react state management",
+        "react-soda",
+        "soda"
+    ],
+    "authors": [],
+    "license": "MIT",
+    "files": [
+        "dist",
+        "compiled",
+        "src"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "json5": "^2.2.3",
+        "react": "^18.2.0"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.46",
+        "father": "^4.3.8"
+    }
+}
