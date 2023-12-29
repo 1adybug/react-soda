@@ -81,7 +81,7 @@ export function createPersistentStore<T>(init: T | (() => T), optionOrString: Cr
     const options = typeof optionOrString === "string" ? { name: optionOrString } : optionOrString
     const { name, store = JSON5.stringify, restore = JSON5.parse } = options
     const storage: StateStorage = typeof options.storage === "function" ? options.storage() : options.storage || window.localStorage
-    const key = `zustand-mini-${name}`
+    const key = `react-soda-${name}`
     const strOrPromise = storage.getItem(key)
     let changed = false
     if (strOrPromise instanceof Promise) {
