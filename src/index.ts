@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import JSON5 from "json5"
 
 export type Listener<T> = (state: T, prev: T) => void
 
@@ -79,7 +78,7 @@ export interface CreatePersistentStoreOption<T = any> {
 
 export function createPersistentStore<T>(init: T | (() => T), optionOrString: CreatePersistentStoreOption<T> | string): UseStore<T> {
     const options = typeof optionOrString === "string" ? { name: optionOrString } : optionOrString
-    const { name, store = JSON5.stringify, restore = JSON5.parse } = options
+    const { name, store = JSON.stringify, restore = JSON.parse } = options
     const storage: StateStorage = typeof options.storage === "function" ? options.storage() : options.storage || window.localStorage
     const key = `react-soda-${name}`
     const strOrPromise = storage.getItem(key)
