@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 
 export type Listener<T> = (state: T, prev: T) => void
 
@@ -48,12 +48,8 @@ export function createStore<T>(init: T | (() => T)): UseStore<T> {
     }
 
     function useStore(): [T, SetState<T>] {
-        const [state, setState] = useState(nowState)
-        useEffect(() => subscribe(nowState => setState(nowState)), [])
-        function newSetState(newState: NewState<T>) {
-            write(newState)
-        }
-        return [state, newSetState]
+        const state = useSyncExternalStore(subscribe, read)
+        return [state, write]
     }
 
     useStore.getState = read
