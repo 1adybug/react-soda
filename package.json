@@ -33,7 +33,7 @@
         "access": "public"
     },
     "dependencies": {
-        "react": "*"
+        "react": ">=16.8.0"
     },
     "devDependencies": {
         "@types/react": "^18.2.46",
