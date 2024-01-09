@@ -1,8 +1,8 @@
 import * as React from "react"
 
-/** 
+/**
  * When useSyncExternalStore is not available, simulate its implementation using a combination of useState and useEffect.
- * 
+ *
  * 当 useSyncExternalStore 不可用时，使用 useState 和 useEffect 的组合模拟实现
  */
 function useSyncExternalStore<T>(subscribe: (onStoreChange: () => void) => () => void, getSnapshot: () => T): T {
@@ -96,18 +96,12 @@ export function createStore<T>(init: T | (() => T)): UseStore<T> {
     function write(newState: NewState<T>, replace?: boolean) {
         if (Object.is(nowState, newState)) return
         const prevState = nowState
-        if (isPlainObject(prevState)) {
-            const nextState = (typeof newState === "function" ? (newState as (prev: T) => Partial<T>)(prevState) : newState) as Partial<T>
-            if (Object.is(prevState, nextState)) return
-            if (replace) {
-                nowState = nextState as T
-            } else {
-                nowState = Object.assign({}, prevState, nextState)
-            }
+        const nextState = typeof newState === "function" ? (newState as (prev: T) => Partial<T>)(prevState) : newState
+        if (Object.is(prevState, nextState)) return
+        if (isPlainObject(prevState) && isPlainObject(nextState) && !replace) {
+            nowState = Object.assign({}, prevState, nextState)
         } else {
-            const nextState = (typeof newState === "function" ? (newState as (prev: T) => T)(prevState) : newState) as T
-            if (Object.is(prevState, nextState)) return
-            nowState = nextState
+            nowState = nextState as T
         }
         listeners.forEach(listener => listener(nowState, prevState))
     }
