@@ -1,5 +1,10 @@
 import * as React from "react"
 
+/** 
+ * When useSyncExternalStore is not available, simulate its implementation using a combination of useState and useEffect.
+ * 
+ * 当 useSyncExternalStore 不可用时，使用 useState 和 useEffect 的组合模拟实现
+ */
 function useSyncExternalStore<T>(subscribe: (onStoreChange: () => void) => () => void, getSnapshot: () => T): T {
     if (!!React.useSyncExternalStore) return React.useSyncExternalStore(subscribe, getSnapshot)
     const [state, setState] = React.useState(getSnapshot)
