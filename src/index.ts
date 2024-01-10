@@ -5,12 +5,13 @@ import * as React from "react"
  *
  * 当 useSyncExternalStore 不可用时，使用 useState 和 useEffect 的组合模拟实现
  */
-function useSyncExternalStore<T>(subscribe: (onStoreChange: () => void) => () => void, getSnapshot: () => T): T {
-    if (!!React.useSyncExternalStore) return React.useSyncExternalStore(subscribe, getSnapshot)
-    const [state, setState] = React.useState(getSnapshot)
-    React.useEffect(() => subscribe(() => setState(getSnapshot)), [])
-    return state
-}
+const useSyncExternalStore: <T>(subscribe: (onStoreChange: () => void) => () => void, getSnapshot: () => T) => T =
+    React.useSyncExternalStore ||
+    function useSyncExternalStore(subscribe, getSnapshot) {
+        const [state, setState] = React.useState(getSnapshot)
+        React.useEffect(() => subscribe(() => setState(getSnapshot)), [])
+        return state
+    }
 
 export type Listener<T> =
     /**
@@ -89,11 +90,11 @@ export function createStore<T>(init: T | (() => T)): UseStore<T> {
 
     const listeners = new Set<Listener<T>>()
 
-    function read() {
+    function getState() {
         return nowState
     }
 
-    function write(newState: NewState<T>, replace?: boolean) {
+    function setState(newState: NewState<T>, replace?: boolean) {
         if (Object.is(nowState, newState)) return
         const prevState = nowState
         const nextState = typeof newState === "function" ? (newState as (prev: T) => Partial<T>)(prevState) : newState
@@ -114,12 +115,12 @@ export function createStore<T>(init: T | (() => T)): UseStore<T> {
     }
 
     function useStore(): [T, SetState<T>] {
-        const state = useSyncExternalStore(subscribe, read)
-        return [state, write]
+        const state = useSyncExternalStore(subscribe, getState)
+        return [state, setState]
     }
 
-    useStore.getState = read
-    useStore.setState = write
+    useStore.getState = getState
+    useStore.setState = setState
     useStore.subscribe = subscribe
 
     return useStore
@@ -243,22 +244,52 @@ export function createPersistentStore<T>(init: T | (() => T), optionOrString: Cr
         }
         if (success) {
             const useStore = createStore(data! as T) as UsePersistentStore<T>
-            useStore.getStorage = () => storage
-            useStore.getKey = () => key
-            useStore.getStringify = () => stringify
-            useStore.getParse = () => parse
-            useStore.removeStorage = () => storage.removeItem(storageKey)
+            function getStorage() {
+                return storage
+            }
+            function getKey() {
+                return key
+            }
+            function getStringify() {
+                return stringify
+            }
+            function getParse() {
+                return parse
+            }
+            function removeStorage() {
+                storage.removeItem(storageKey)
+            }
+            useStore.getStorage = getStorage
+            useStore.getKey = getKey
+            useStore.getStringify = getStringify
+            useStore.getParse = getParse
+            useStore.removeStorage = removeStorage
             storage.setItem(storageKey, stringify(useStore.getState()))
             useStore.subscribe(state => storage.setItem(storageKey, stringify(state)))
             return useStore
         }
     }
     const useStore = createStore(init) as UsePersistentStore<T>
-    useStore.getStorage = () => storage
-    useStore.getKey = () => key
-    useStore.getStringify = () => stringify
-    useStore.getParse = () => parse
-    useStore.removeStorage = () => storage.removeItem(storageKey)
+    function getStorage() {
+        return storage
+    }
+    function getKey() {
+        return key
+    }
+    function getStringify() {
+        return stringify
+    }
+    function getParse() {
+        return parse
+    }
+    function removeStorage() {
+        storage.removeItem(storageKey)
+    }
+    useStore.getStorage = getStorage
+    useStore.getKey = getKey
+    useStore.getStringify = getStringify
+    useStore.getParse = getParse
+    useStore.removeStorage = removeStorage
     storage.setItem(storageKey, stringify(useStore.getState()))
     const unsubscribe = useStore.subscribe(() => {
         changed = true
