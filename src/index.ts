@@ -210,6 +210,21 @@ export function createPersistentStore<T>(init: T | (() => T), optionOrString: Cr
     const { key, stringify = JSON.stringify, parse = JSON.parse } = options
     const storage: StateStorage = typeof options.storage === "function" ? options.storage() : options.storage || window.localStorage
     const storageKey = `react-soda-${key}`
+    function getStorage() {
+        return storage
+    }
+    function getKey() {
+        return key
+    }
+    function getStringify() {
+        return stringify
+    }
+    function getParse() {
+        return parse
+    }
+    function removeStorage() {
+        storage.removeItem(storageKey)
+    }
     const strOrPromise = storage.getItem(storageKey)
     let changed = false
     if (strOrPromise instanceof Promise) {
@@ -244,21 +259,6 @@ export function createPersistentStore<T>(init: T | (() => T), optionOrString: Cr
         }
         if (success) {
             const useStore = createStore(data! as T) as UsePersistentStore<T>
-            function getStorage() {
-                return storage
-            }
-            function getKey() {
-                return key
-            }
-            function getStringify() {
-                return stringify
-            }
-            function getParse() {
-                return parse
-            }
-            function removeStorage() {
-                storage.removeItem(storageKey)
-            }
             useStore.getStorage = getStorage
             useStore.getKey = getKey
             useStore.getStringify = getStringify
@@ -270,21 +270,6 @@ export function createPersistentStore<T>(init: T | (() => T), optionOrString: Cr
         }
     }
     const useStore = createStore(init) as UsePersistentStore<T>
-    function getStorage() {
-        return storage
-    }
-    function getKey() {
-        return key
-    }
-    function getStringify() {
-        return stringify
-    }
-    function getParse() {
-        return parse
-    }
-    function removeStorage() {
-        storage.removeItem(storageKey)
-    }
     useStore.getStorage = getStorage
     useStore.getKey = getKey
     useStore.getStringify = getStringify
