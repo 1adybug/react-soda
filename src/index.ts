@@ -134,11 +134,11 @@ export interface StateStorage {
 
 export interface CreatePersistentStoreOption<T = any> {
     /**
-     * The unique key of the persistent state.
+     * The unique name.
      *
-     * 持久化存储的唯一 key
+     * 唯一标识符
      */
-    key: string
+    name: string
     /**
      * The persistent storage engine, default is `window.localStorage`.
      *
@@ -167,11 +167,17 @@ export interface UsePersistentStore<T> extends UseStore<T> {
      */
     getStorage(): StateStorage
     /**
-     * Get the unique key of the persistent state.
+     * Get the unique name.
      *
-     * 获取持久化存储的唯一 key
+     * 获取唯一标识符
      */
-    getKey(): string
+    getName(): string
+    /**
+     * Get the unique key in the persistent state.
+     *
+     * 获取在持久化存储的唯一 key
+     */
+    getStorageKey(): string
     /**
      * Get the function to convert the state to a string.
      *
@@ -206,15 +212,18 @@ export interface UsePersistentStore<T> extends UseStore<T> {
  * 选项或者持久化存储的唯一 key
  */
 export function createPersistentStore<T>(init: T | (() => T), optionOrString: CreatePersistentStoreOption<T> | string): UsePersistentStore<T> {
-    const options = typeof optionOrString === "string" ? { key: optionOrString } : optionOrString
-    const { key, stringify = JSON.stringify, parse = JSON.parse } = options
+    const options = typeof optionOrString === "string" ? { name: optionOrString } : optionOrString
+    const { name, stringify = JSON.stringify, parse = JSON.parse } = options
     const storage: StateStorage = typeof options.storage === "function" ? options.storage() : options.storage || window.localStorage
-    const storageKey = `react-soda-${key}`
+    const storageKey = `react-soda-${name}`
     function getStorage() {
         return storage
     }
-    function getKey() {
-        return key
+    function getName() {
+        return name
+    }
+    function getStorageKey() {
+        return storageKey
     }
     function getStringify() {
         return stringify
@@ -260,7 +269,8 @@ export function createPersistentStore<T>(init: T | (() => T), optionOrString: Cr
         if (success) {
             const useStore = createStore(data! as T) as UsePersistentStore<T>
             useStore.getStorage = getStorage
-            useStore.getKey = getKey
+            useStore.getName = getName
+            useStore.getStorageKey = getStorageKey
             useStore.getStringify = getStringify
             useStore.getParse = getParse
             useStore.removeStorage = removeStorage
@@ -271,7 +281,8 @@ export function createPersistentStore<T>(init: T | (() => T), optionOrString: Cr
     }
     const useStore = createStore(init) as UsePersistentStore<T>
     useStore.getStorage = getStorage
-    useStore.getKey = getKey
+    useStore.getName = getName
+    useStore.getStorageKey = getStorageKey
     useStore.getStringify = getStringify
     useStore.getParse = getParse
     useStore.removeStorage = removeStorage
