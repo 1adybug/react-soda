@@ -21,7 +21,7 @@
     "authors": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/1adybug/react-soda"
+        "url": "git+https://github.com/1adybug/react-soda.git"
     },
     "license": "MIT",
     "files": [
