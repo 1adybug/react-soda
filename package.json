@@ -1,6 +1,6 @@
 {
     "name": "react-soda",
-    "version": "2.0.8",
+    "version": "2.0.9",
     "description": "😉 Simpler and more effective state management for react.",
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
