@@ -1,17 +1,4 @@
-import * as React from "react"
-
-/**
- * When useSyncExternalStore is not available, simulate its implementation using a combination of useState and useEffect.
- *
- * 当 useSyncExternalStore 不可用时，使用 useState 和 useEffect 的组合模拟实现
- */
-const useSyncExternalStore: <T>(subscribe: (onStoreChange: () => void) => () => void, getSnapshot: () => T) => T =
-    React.useSyncExternalStore ||
-    function useSyncExternalStore(subscribe, getSnapshot) {
-        const [state, setState] = React.useState(getSnapshot)
-        React.useEffect(() => subscribe(() => setState(getSnapshot)), [])
-        return state
-    }
+import { useSyncExternalStore } from "react"
 
 export type Listener<T> =
     /**
@@ -29,18 +16,30 @@ export type IsPlainObject<T> = T extends Record<string, any> ? (T extends any[] 
 
 export type NewState<T> = IsPlainObject<T> extends true ? Partial<T> | ((prev: T) => Partial<T>) : T | ((prev: T) => T)
 
-export interface SetState<T> {
+export type PlainObjectSetState<T> =
     /**
      * @param newState new state
      *
      * 新的状态
      *
-     * @param replace Only when the state is a plain object and not an array, this parameter takes effect. It determines whether to replace the original object directly, with the default being false
+     * @param replace This parameter will only take effect when the current and subsequent states are plain objects that are not arrays. It determines whether to replace the original object directly, with the default being false
      *
-     * 只有当状态为非数组的普通对象时，这个参数才会生效，是否直接替换原对象，默认为 false
+     * 只有当前后的状态均为非数组的普通对象时，这个参数才会生效，是否直接替换原对象，默认为 false
+     *
+     * @default false
+     *
      */
-    (newState: NewState<T>, replace?: boolean): void
-}
+    (newState: NewState<T>, replace?: boolean) => void
+
+export type NonPlainObjectSetState<T> =
+    /**
+     * @param newState new state
+     *
+     * 新的状态
+     */
+    (newState: NewState<T>) => void
+
+export type SetState<T> = IsPlainObject<T> extends true ? PlainObjectSetState<T> : NonPlainObjectSetState<T>
 
 export interface UseStore<T> {
     /**
