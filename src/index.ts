@@ -128,7 +128,12 @@ export function createStore<T>(init: T | (() => T)): UseStore<T> {
         }
     }
 
-    function useStore(): [T, SetState<T>] {
+    const _getState = getState
+
+    function useStore(selector?: (state: T) => any): any {
+        function getState() {
+            return _getState(selector)
+        }
         const state = useSyncExternalStore(subscribe, getState)
         return [state, setState]
     }
@@ -157,7 +162,7 @@ export interface CreatePersistentStoreOption<T = any> {
      * The persistent storage engine, default is `globalThis.localStorage`.
      *
      * 持久化存储引擎，默认为 `globalThis.localStorage`
-     * 
+     *
      * @default globalThis.localStorage
      */
     storage?: StateStorage | (() => StateStorage)
@@ -165,7 +170,7 @@ export interface CreatePersistentStoreOption<T = any> {
      * The function to convert the state to a string, default is `JSON.stringify`.
      *
      * 将状态转换成字符串的函数，默认为 `JSON.stringify`
-     * 
+     *
      * @default JSON.stringify
      */
     stringify?: (state: T) => string
@@ -173,7 +178,7 @@ export interface CreatePersistentStoreOption<T = any> {
      * The function to convert the string to a state, default is `JSON.parse`.
      *
      * 将字符串转换成状态的函数，默认为 `JSON.parse`
-     * 
+     *
      * @default JSON.parse
      */
     parse?: (state: string) => T
