@@ -29,7 +29,7 @@ export type IsPlainObject<T> = T extends Record<string, any> ? (T extends any[] 
 
 export type NewState<T> = IsPlainObject<T> extends true ? Partial<T> | ((prev: T) => Partial<T>) : T | ((prev: T) => T)
 
-export type SetState<T> =
+export interface SetState<T> {
     /**
      * @param newState new state
      *
@@ -39,7 +39,8 @@ export type SetState<T> =
      *
      * 只有当状态为非数组的普通对象时，这个参数才会生效，是否直接替换原对象，默认为 false
      */
-    (newState: NewState<T>, replace?: boolean) => void
+    (newState: NewState<T>, replace?: boolean): void
+}
 
 export interface UseStore<T> {
     /**
@@ -49,11 +50,23 @@ export interface UseStore<T> {
      */
     (): [T, SetState<T>]
     /**
+     * atom state
+     *
+     * 原子状态
+     */
+    <X>(selector: (state: T) => X): [X, SetState<T>]
+    /**
      * Get the current state.
      *
      * 获取最新状态
      */
     getState(): T
+    /**
+     * atom state
+     *
+     * 原子状态
+     */
+    getState<X>(selector: (state: T) => X): X
     /**
      * Set the state.
      *
@@ -90,7 +103,8 @@ export function createStore<T>(init: T | (() => T)): UseStore<T> {
 
     const listeners = new Set<Listener<T>>()
 
-    function getState() {
+    function getState(selector?: (state: T) => any) {
+        if (typeof selector === "function") return selector(nowState)
         return nowState
     }
 
@@ -140,21 +154,27 @@ export interface CreatePersistentStoreOption<T = any> {
      */
     name: string
     /**
-     * The persistent storage engine, default is `window.localStorage`.
+     * The persistent storage engine, default is `globalThis.localStorage`.
      *
-     * 持久化存储引擎，默认为 `window.localStorage`
+     * 持久化存储引擎，默认为 `globalThis.localStorage`
+     * 
+     * @default globalThis.localStorage
      */
     storage?: StateStorage | (() => StateStorage)
     /**
      * The function to convert the state to a string, default is `JSON.stringify`.
      *
      * 将状态转换成字符串的函数，默认为 `JSON.stringify`
+     * 
+     * @default JSON.stringify
      */
     stringify?: (state: T) => string
     /**
      * The function to convert the string to a state, default is `JSON.parse`.
      *
      * 将字符串转换成状态的函数，默认为 `JSON.parse`
+     * 
+     * @default JSON.parse
      */
     parse?: (state: string) => T
 }
@@ -214,7 +234,7 @@ export interface UsePersistentStore<T> extends UseStore<T> {
 export function createPersistentStore<T>(init: T | (() => T), optionOrString: CreatePersistentStoreOption<T> | string): UsePersistentStore<T> {
     const options = typeof optionOrString === "string" ? { name: optionOrString } : optionOrString
     const { name, stringify = JSON.stringify, parse = JSON.parse } = options
-    const storage: StateStorage = typeof options.storage === "function" ? options.storage() : options.storage || window.localStorage
+    const storage: StateStorage = typeof options.storage === "function" ? options.storage() : options.storage || globalThis.localStorage
     const storageKey = `react-soda-${name}`
     function getStorage() {
         return storage
